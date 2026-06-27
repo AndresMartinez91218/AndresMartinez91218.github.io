@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteo — Monopatín Eléctrico Black Power R32 B</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0d0d0d;
+    --dark: #1a1a1a;
+    --card-bg: #212121;
+    --accent: #e8ff00;
+    --accent2: #ff6b00;
+    --text: #f0f0f0;
+    --muted: #888;
+    --border: #333;
+    --number-free: #2a2a2a;
+    --number-taken: #1c3a1c;
+    --number-taken-border: #2d6a2d;
+    --radius: 8px;
+  }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 50%, #0d0d0d 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(232,255,0,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* ── PRECIOS ── */
+  .prices {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .price-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1.5rem;
+    text-align: center;
+    min-width: 140px;
+  }
+  .price-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .price-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--accent); margin: 2px 0; }
+  .price-card .qty { font-size: 12px; color: var(--muted); }
+
+  /* ── STATS ── */
+  .stats-bar {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 1rem 0 0;
+  }
+  .stat { text-align: center; }
+  .stat .n { font-size: 1.4rem; font-weight: 700; color: var(--accent2); }
+  .stat .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── NAV ── */
+  .nav {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    padding: 1.2rem;
+    background: var(--dark);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .nav button:hover, .nav button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  /* ── SECCIÓN WRAPPER ── */
+  section {
+    display: none;
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  section.active { display: block; }
+
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 22px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ── GRILLA DE NÚMEROS ── */
+  .numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+    gap: 8px;
+    margin-bottom: 2rem;
+  }
+  .num-card {
+    background: var(--number-free);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+  }
+  .num-card:hover { border-color: var(--accent); }
+  .num-card.taken {
+    background: var(--number-taken);
+    border-color: var(--number-taken-border);
+  }
+  .num-card .num-label {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .num-card.taken .num-label { color: #4caf50; }
+  .num-card .num-name {
+    font-size: 10px;
+    color: var(--text);
+    margin-top: 4px;
+    word-break: break-word;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+  .num-card .num-phone {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+    word-break: break-word;
+  }
+  .num-card .num-price {
+    font-size: 9px;
+    color: var(--accent2);
+    margin-top: auto;
+    padding-top: 4px;
+    font-weight: 600;
+  }
+  .num-card .tick {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 14px;
+    color: #4caf50;
+  }
+  .num-card.free .num-name, .num-card.free .num-phone { color: var(--muted); font-size: 10px; font-weight: 400; font-style: italic; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 420px;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal h3 { font-size: 1.1rem; margin-bottom: 1.2rem; }
+  .modal h3 span { color: var(--accent); font-size: 1.4rem; }
+  .modal label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .modal input {
+    width: 100%;
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 1rem;
+    outline: none;
+  }
+  .modal input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 0.6rem; margin-top: 0.5rem; }
+  .btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-danger { background: #7b2020; color: #fff; }
+  .btn-cancel { background: var(--border); color: var(--muted); flex: 0.6; }
+
+  /* ── PRECIO MODAL ── */
+  .price-options { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .price-opt {
+    flex: 1;
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    color: var(--text);
+  }
+  .price-opt.selected { border-color: var(--accent); background: rgba(232,255,0,0.08); }
+  .price-opt .po-price { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .price-opt .po-qty { font-size: 11px; color: var(--muted); }
+
+  /* ── INFO MONOPATÍN ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  @media(max-width:600px) { .info-grid { grid-template-columns: 1fr; } }
+  .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+  }
+  .info-card h4 { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; }
+  .spec-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #2a2a2a; font-size: 13px; }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-row .sk { color: var(--muted); }
+  .spec-row .sv { color: var(--text); font-weight: 600; text-align: right; }
+
+  .highlight-box {
+    background: rgba(232,255,0,0.06);
+    border: 1px solid rgba(232,255,0,0.25);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .highlight-box h4 { color: var(--accent); font-size: 13px; margin-bottom: 0.5rem; }
+  .highlight-box p { font-size: 13px; color: #ccc; line-height: 1.6; }
+
+  /* ── RULETA ── */
+  .ruleta-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+  .wheel-wrap {
+    position: relative;
+    width: min(480px, 90vw);
+    height: min(480px, 90vw);
+  }
+  .wheel-wrap canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+  }
+  .wheel-pointer {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 28px solid var(--accent);
+    filter: drop-shadow(0 2px 6px rgba(232,255,0,0.6));
+    z-index: 10;
+  }
+  .spin-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 50px;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s, transform 0.1s;
+    text-transform: uppercase;
+  }
+  .spin-btn:hover { opacity: 0.9; }
+  .spin-btn:active { transform: scale(0.97); }
+  .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .winner-box {
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    min-width: 260px;
+    display: none;
+  }
+  .winner-box.show { display: block; animation: popIn 0.4s ease; }
+  @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .winner-box .wn { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .winner-box .wnum { font-size: 3rem; font-weight: 900; color: var(--accent); line-height: 1; }
+  .winner-box .wname { font-size: 1.1rem; font-weight: 700; margin-top: 6px; }
+  .winner-box .wphone { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .ruleta-note {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    max-width: 400px;
+  }
+
+  /* ── LISTA COMPRADORES ── */
+  .buyer-search {
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+    max-width: 400px;
+    outline: none;
+    margin-bottom: 1.5rem;
+  }
+  .buyer-search:focus { border-color: var(--accent); }
+  .buyer-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .buyer-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .buyer-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #1f1f1f;
+    vertical-align: middle;
+  }
+  .buyer-table tr:hover td { background: #1f1f1f; }
+  .nums-list { display: flex; flex-wrap: wrap; gap: 4px; }
+  .nums-list .tag {
+    background: var(--number-taken);
+    border: 1px solid var(--number-taken-border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    color: #4caf50;
+    font-weight: 700;
+  }
+  .prob-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .prob-fill {
+    height: 6px;
+    background: var(--accent2);
+    border-radius: 3px;
+    min-width: 2px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🛴 Gran Sorteo</div>
+  <h1>Monopatín Eléctrico<br><span>Black Power R32 B</span></h1>
+  <p class="hero-sub">Anotate con tu número y participá para ganarlo</p>
+  <div class="prices">
+    <div class="price-card">
+      <div class="label">1 número</div>
+      <div class="amount">$3.000</div>
+      <div class="qty">1 chance de ganar</div>
+    </div>
+    <div class="price-card">
+      <div class="label">Pack 2 números</div>
+      <div class="amount">$5.000</div>
+      <div class="qty">2 chances de ganar</div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="n" id="stat-total">250</div><div class="l">números totales</div></div>
+    <div class="stat"><div class="n" id="stat-taken">0</div><div class="l">vendidos</div></div>
+    <div class="stat"><div class="n" id="stat-free">250</div><div class="l">disponibles</div></div>
+    <div class="stat"><div class="n" id="stat-buyers">0</div><div class="l">participantes</div></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="active" onclick="showSection('numeros')">🎟️ Números</button>
+  <button onclick="showSection('info')">📋 Info del premio</button>
+  <button onclick="showSection('ruleta')">🎡 Ruleta</button>
+  <button onclick="showSection('participantes')">👥 Participantes</button>
+</div>
+
+<!-- SECCIÓN: NÚMEROS -->
+<section id="numeros" class="active">
+  <div class="section-title">Elegí tu número</div>
+  <p style="color:var(--muted); font-size:13px; margin-bottom:1.2rem;">Hacé clic en cualquier número libre para anotarte. Los verdes ya están vendidos.</p>
+  <div class="numbers-grid" id="grid"></div>
+</section>
+
+<!-- SECCIÓN: INFO -->
+<section id="info">
+  <div class="section-title">Monopatín Eléctrico Black Power R32 B Negro</div>
+
+  <div class="highlight-box">
+    <h4>¿Qué se sortea?</h4>
+    <p>Un monopatín eléctrico Black Power R32 B en color negro, nuevo. Potente, moderno y perfecto para moverse por la ciudad sin gastar en combustible.</p>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <h4>Motor y batería</h4>
+      <div class="spec-row"><span class="sk">Motor</span><span class="sv">320W</span></div>
+      <div class="spec-row"><span class="sk">Velocidad máx.</span><span class="sv">25 km/h</span></div>
+      <div class="spec-row"><span class="sk">Autonomía</span><span class="sv">hasta 20 km</span></div>
+      <div class="spec-row"><span class="sk">Batería</span><span class="sv">Li-ion 24V / 5.2 Ah</span></div>
+      <div class="spec-row"><span class="sk">Carga</span><span class="sv">~3 horas</span></div>
+    </div>
+    <div class="info-card">
+      <h4>Diseño y seguridad</h4>
+      <div class="spec-row"><span class="sk">Color</span><span class="sv">Negro</span></div>
+      <div class="spec-row"><span class="sk">Frenos</span><span class="sv">Disco trasero</span></div>
+      <div class="spec-row"><span class="sk">Ruedas</span><span class="sv">8.5 pulgadas</span></div>
+      <div class="spec-row"><span class="sk">Luces</span><span class="sv">LED delantera y trasera</span></div>
+      <div class="spec-row"><span class="sk">Pantalla</span><span class="sv">Digital (velocidad y batería)</span></div>
+      <div class="spec-row"><span class="sk">Plegable</span><span class="sv">Sí</span></div>
+    </div>
+    <div class="info-card">
+      <h4>Medidas y peso</h4>
+      <div class="spec-row"><span class="sk">Peso</span><span class="sv">11,5 kg</span></div>
+      <div class="spec-row"><span class="sk">Carga máx.</span><span class="sv">100 kg</span></div>
+      <div class="spec-row"><span class="sk">Edad mínima</span><span class="sv">8 años</span></div>
+      <div class="spec-row"><span class="sk">Dimensiones</span><span class="sv">1150 × 410 × 850 mm</span></div>
+    </div>
+    <div class="info-card">
+      <h4>Detalles del sorteo</h4>
+      <div class="spec-row"><span class="sk">Total números</span><span class="sv">250</span></div>
+      <div class="spec-row"><span class="sk">Precio unitario</span><span class="sv">$3.000</span></div>
+      <div class="spec-row"><span class="sk">Pack x2</span><span class="sv">$5.000</span></div>
+      <div class="spec-row"><span class="sk">Modalidad</span><span class="sv">Ruleta digital</span></div>
+      <div class="spec-row"><span class="sk">1 ganador</span><span class="sv">✅ Premio único</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECCIÓN: RULETA -->
+<section id="ruleta">
+  <div class="section-title">Ruleta del sorteo</div>
+  <p style="color:var(--muted); font-size:13px; margin-bottom:1.5rem;">La ruleta incluye solo los números vendidos. Si alguien compró 2 números, aparece dos veces → más chances.</p>
+  <div class="ruleta-container">
+    <div class="wheel-wrap">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheel" width="480" height="480"></canvas>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">¡GIRAR!</button>
+    <div class="winner-box" id="winnerBox">
+      <div class="wn">🏆 ¡Ganador!</div>
+      <div class="wnum" id="winNum">—</div>
+      <div class="wname" id="winName">—</div>
+      <div class="wphone" id="winPhone">—</div>
+    </div>
+    <p class="ruleta-note" id="ruletaNote">Anotá participantes en la sección de Números para activar la ruleta.</p>
+  </div>
+</section>
+
+<!-- SECCIÓN: PARTICIPANTES -->
+<section id="participantes">
+  <div class="section-title">Lista de participantes</div>
+  <input class="buyer-search" id="buyerSearch" placeholder="Buscar por nombre o teléfono..." oninput="renderBuyers()">
+  <div id="buyerList"></div>
+</section>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Número <span id="modalNum">#1</span></h3>
+
+    <div id="formView">
+      <label>Precio / cantidad</label>
+      <div class="price-options" id="priceOptions">
+        <button class="price-opt selected" data-nums="1" data-price="3000" onclick="selectPrice(this)">
+          <div class="po-price">$3.000</div>
+          <div class="po-qty">1 número</div>
+        </button>
+        <button class="price-opt" data-nums="2" data-price="5000" onclick="selectPrice(this)">
+          <div class="po-price">$5.000</div>
+          <div class="po-qty">2 números</div>
+        </button>
+      </div>
+      <div id="extraNumNote" style="font-size:12px; color:var(--accent2); margin-bottom:0.8rem; display:none;"></div>
+
+      <label>Nombre completo</label>
+      <input type="text" id="inputName" placeholder="Ej: Juan Pérez">
+
+      <label>Teléfono</label>
+      <input type="tel" id="inputPhone" placeholder="Ej: 261 123-4567">
+
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveNumber()">Guardar</button>
+      </div>
+    </div>
+
+    <div id="editView" style="display:none;">
+      <p style="font-size:13px; color:var(--muted); margin-bottom:1rem;">Este número ya está vendido.</p>
+      <label>Nombre</label>
+      <input type="text" id="editName">
+      <label>Teléfono</label>
+      <input type="tel" id="editPhone">
+      <div class="modal-actions">
+        <button class="btn btn-danger" onclick="deleteNumber()">Liberar</button>
+        <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="updateNumber()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Sorteo organizado de manera privada &nbsp;·&nbsp; Black Power R32 B Negro &nbsp;·&nbsp; 250 números
+</footer>
+
+<script>
+// ─── DATA ───────────────────────────────────────
+const TOTAL = 250;
+let data = {}; // { "001": { name, phone, price, nums } }
+
+function key(n) { return String(n).padStart(3,'0'); }
+
+function save() {
+  try { localStorage.setItem('sorteo_r32', JSON.stringify(data)); } catch(e){}
+}
+function load() {
+  try {
+    const d = localStorage.getItem('sorteo_r32');
+    if(d) data = JSON.parse(d);
+  } catch(e){}
+}
+
+// ─── SECTIONS ────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach((b,i) => {
+    const ids = ['numeros','info','ruleta','participantes'];
+    b.classList.toggle('active', ids[i] === id);
+  });
+  if(id === 'ruleta') drawWheel();
+  if(id === 'participantes') renderBuyers();
+}
+
+// ─── GRID ────────────────────────────────────────
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  for(let i = 1; i <= TOTAL; i++) {
+    const k = key(i);
+    const entry = data[k];
+    const card = document.createElement('div');
+    card.className = 'num-card ' + (entry ? 'taken' : 'free');
+    card.onclick = () => openModal(i);
+    if(entry) {
+      card.innerHTML = `
+        <span class="tick">✓</span>
+        <div class="num-label">#${k}</div>
+        <div class="num-name">${entry.name}</div>
+        <div class="num-phone">${entry.phone}</div>
+        <div class="num-price">${entry.nums===2?'Pack x2 · $5.000':'x1 · $3.000'}</div>
+      `;
+    } else {
+      card.innerHTML = `
+        <div class="num-label">#${k}</div>
+        <div class="num-name">Disponible</div>
+      `;
+    }
+    grid.appendChild(card);
+  }
+  updateStats();
+}
+
+function normalizeKey(name, phone) {
+  const n = name.trim().toLowerCase().replace(/\s+/g,' ');
+  const p = phone.replace(/\D/g,'');
+  return n + '||' + p;
+}
+
+function updateStats() {
+  const taken = Object.keys(data).length;
+  const buyers = new Set(Object.values(data).map(d => normalizeKey(d.name, d.phone))).size;
+  document.getElementById('stat-taken').textContent = taken;
+  document.getElementById('stat-free').textContent = TOTAL - taken;
+  document.getElementById('stat-buyers').textContent = buyers;
+}
+
+// ─── MODAL ───────────────────────────────────────
+let currentNum = null;
+let selectedNums = 1;
+
+function openModal(n) {
+  currentNum = n;
+  const k = key(n);
+  const entry = data[k];
+  document.getElementById('modalNum').textContent = '#' + k;
+  document.getElementById('formView').style.display = entry ? 'none' : 'block';
+  document.getElementById('editView').style.display = entry ? 'block' : 'none';
+  if(entry) {
+    document.getElementById('editName').value = entry.name;
+    document.getElementById('editPhone').value = entry.phone;
+  } else {
+    document.getElementById('inputName').value = '';
+    document.getElementById('inputPhone').value = '';
+    selectedNums = 1;
+    document.querySelectorAll('.price-opt').forEach(b => b.classList.toggle('selected', b.dataset.nums==='1'));
+    document.getElementById('extraNumNote').style.display='none';
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+
+function selectPrice(el) {
+  document.querySelectorAll('.price-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedNums = parseInt(el.dataset.nums);
+  const note = document.getElementById('extraNumNote');
+  if(selectedNums === 2) {
+    const next = findNextFree(currentNum);
+    if(next) {
+      note.textContent = `Se asignará también el número #${key(next)} automáticamente.`;
+      note.style.display = 'block';
+    } else {
+      note.textContent = 'No hay segundo número libre disponible.';
+      note.style.display = 'block';
+    }
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+function findNextFree(from) {
+  for(let i = 1; i <= TOTAL; i++) {
+    if(i !== from && !data[key(i)]) return i;
+  }
+  return null;
+}
+
+function saveNumber() {
+  const name = document.getElementById('inputName').value.trim();
+  const phone = document.getElementById('inputPhone').value.trim();
+  if(!name || !phone) { alert('Completá nombre y teléfono'); return; }
+
+  const k = key(currentNum);
+  data[k] = { name, phone, nums: selectedNums, price: selectedNums===2?5000:3000 };
+
+  if(selectedNums === 2) {
+    const next = findNextFree(currentNum);
+    if(next) {
+      data[key(next)] = { name, phone, nums: 2, price: 5000, paired: currentNum };
+    }
+  }
+  save(); renderGrid(); closeModal();
+}
+
+function updateNumber() {
+  const name = document.getElementById('editName').value.trim();
+  const phone = document.getElementById('editPhone').value.trim();
+  if(!name || !phone) { alert('Completá nombre y teléfono'); return; }
+  const k = key(currentNum);
+  data[k].name = name; data[k].phone = phone;
+  save(); renderGrid(); closeModal();
+}
+
+function deleteNumber() {
+  if(!confirm('¿Liberar este número?')) return;
+  delete data[key(currentNum)];
+  save(); renderGrid(); closeModal();
+}
+
+// ─── RULETA ──────────────────────────────────────
+let isSpinning = false;
+let currentAngle = 0;
+
+function getWheelEntries() {
+  const entries = [];
+  for(let i = 1; i <= TOTAL; i++) {
+    const k = key(i);
+    if(data[k]) entries.push({ num: k, name: data[k].name, phone: data[k].phone });
+  }
+  return entries;
+}
+
+function drawWheel(highlightIdx = -1) {
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = W/2 - 4;
+  const entries = getWheelEntries();
+
+  ctx.clearRect(0,0,W,H);
+
+  if(entries.length === 0) {
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#888';
+    ctx.font = 'bold 18px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('Sin participantes', cx, cy);
+    document.getElementById('ruletaNote').textContent = 'Anotá participantes en la sección de Números para activar la ruleta.';
+    document.getElementById('spinBtn').disabled = true;
+    return;
+  }
+
+  document.getElementById('spinBtn').disabled = false;
+  document.getElementById('ruletaNote').textContent = `${entries.length} número${entries.length!==1?'s':''} en la ruleta. Quienes compraron 2 aparecen dos veces.`;
+
+  const slice = (Math.PI * 2) / entries.length;
+  const colors = ['#1e3a1e','#1a1a2e','#2a1a1a','#1e2a1e','#252525','#1a2a1a','#2a1a2a','#1a1e2a'];
+
+  entries.forEach((e, i) => {
+    const start = currentAngle + i * slice;
+    const end = start + slice;
+    const isHL = i === highlightIdx;
+
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,end);
+    ctx.closePath();
+    ctx.fillStyle = isHL ? '#2d5a1e' : colors[i % colors.length];
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Text
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + slice/2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = isHL ? '#a8ff40' : '#e8ff00';
+    ctx.font = `bold ${entries.length > 60 ? 9 : entries.length > 30 ? 11 : 13}px Segoe UI`;
+    ctx.fillText('#'+e.num, r - 8, 4);
+    ctx.restore();
+  });
+
+  // Center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, Math.PI*2);
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fill();
+  ctx.strokeStyle = '#e8ff00';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#e8ff00';
+  ctx.font = 'bold 11px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('🛴', cx, cy+4);
+}
+
+function spinWheel() {
+  const entries = getWheelEntries();
+  if(entries.length === 0 || isSpinning) return;
+
+  isSpinning = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('winnerBox').classList.remove('show');
+
+  const winnerIdx = Math.floor(Math.random() * entries.length);
+  const slice = (Math.PI * 2) / entries.length;
+
+  const spins = 6 + Math.random() * 4;
+  const targetAngle = -(winnerIdx * slice + slice/2) - Math.PI/2 + (Math.PI*2)*spins;
+
+  const startAngle = currentAngle;
+  const totalDelta = targetAngle - startAngle;
+  const duration = 4000 + Math.random()*1500;
+  const start = performance.now();
+
+  function easeOut(t) { return 1 - Math.pow(1-t, 4); }
+
+  function animate(now) {
+    const elapsed = now - start;
+    const t = Math.min(elapsed / duration, 1);
+    currentAngle = startAngle + totalDelta * easeOut(t);
+
+    // Highlight winner during final approach
+    const hl = t > 0.85 ? winnerIdx : -1;
+    drawWheel(hl);
+
+    if(t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      currentAngle = currentAngle % (Math.PI*2);
+      drawWheel(winnerIdx);
+      isSpinning = false;
+      document.getElementById('spinBtn').disabled = false;
+
+      const w = entries[winnerIdx];
+      document.getElementById('winNum').textContent = '#' + w.num;
+      document.getElementById('winName').textContent = w.name;
+      document.getElementById('winPhone').textContent = w.phone;
+      document.getElementById('winnerBox').classList.add('show');
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// ─── BUYERS TABLE ────────────────────────────────
+function renderBuyers() {
+  const query = document.getElementById('buyerSearch').value.toLowerCase();
+  const map = {};
+
+  for(const [k, v] of Object.entries(data)) {
+    const id = normalizeKey(v.name, v.phone);
+    if(!map[id]) map[id] = { name: v.name, phone: v.phone, nums: [], total: 0 };
+    map[id].nums.push(k);
+    map[id].total += (v.nums===2 && !v.paired) ? 5000 : (v.nums===1 ? 3000 : 0);
+  }
+
+  const buyers = Object.values(map).filter(b =>
+    !query || b.name.toLowerCase().includes(query) || b.phone.includes(query)
+  ).sort((a,b) => b.nums.length - a.nums.length);
+
+  const total = Object.keys(data).length;
+
+  if(buyers.length === 0) {
+    document.getElementById('buyerList').innerHTML =
+      `<p style="color:var(--muted); padding:2rem 0; text-align:center;">
+        ${query ? 'Sin resultados para tu búsqueda.' : 'Todavía no hay participantes anotados.'}
+      </p>`;
+    return;
+  }
+
+  let html = `<table class="buyer-table">
+    <thead><tr>
+      <th>#</th><th>Nombre</th><th>Teléfono</th><th>Números</th><th>Probabilidad</th>
+    </tr></thead><tbody>`;
+
+  buyers.forEach((b, idx) => {
+    const pct = total > 0 ? ((b.nums.length / total)*100).toFixed(1) : '0.0';
+    const barW = total > 0 ? Math.max(4, Math.round((b.nums.length/total)*200)) : 4;
+    html += `<tr>
+      <td style="color:var(--muted)">${idx+1}</td>
+      <td style="font-weight:600">${b.name}</td>
+      <td style="color:var(--muted)">${b.phone}</td>
+      <td><div class="nums-list">${b.nums.map(n=>`<span class="tag">#${n}</span>`).join('')}</div></td>
+      <td><div class="prob-bar"><div class="prob-fill" style="width:${barW}px"></div><span>${pct}%</span></div></td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('buyerList').innerHTML = html;
+}
+
+// ─── INIT ────────────────────────────────────────
+load();
+renderGrid();
+drawWheel();
+</script>
+</body>
+</html>
